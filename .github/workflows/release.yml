@@ -21,8 +21,8 @@ jobs:
   test:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-node@v4
+      - uses: actions/checkout@v6
+      - uses: actions/setup-node@v6
         with:
           node-version: 22
           cache: npm
@@ -36,15 +36,15 @@ jobs:
     needs: test
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-node@v4
+      - uses: actions/checkout@v6
+      - uses: actions/setup-node@v6
         with:
           node-version: 22
           cache: npm
       - run: npm ci
       - run: npm run gulp -- "wx:package-xpi"
       - run: npm run gulp -- "web:package-zip"
-      - uses: actions/upload-artifact@v4
+      - uses: actions/upload-artifact@v6
         with:
           name: thunderbird-and-web
           path: |
@@ -56,14 +56,14 @@ jobs:
     needs: test
     runs-on: windows-latest
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-node@v4
+      - uses: actions/checkout@v6
+      - uses: actions/setup-node@v6
         with:
           node-version: 22
           cache: npm
       - run: npm ci
       - run: npm run gulp -- "app:zip-win32"
-      - uses: actions/upload-artifact@v4
+      - uses: actions/upload-artifact@v6
         with:
           name: windows
           path: build/sieve-NG-*-win32-x64.zip
@@ -75,8 +75,8 @@ jobs:
     env:
       APPIMAGE_EXTRACT_AND_RUN: "1"
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-node@v4
+      - uses: actions/checkout@v6
+      - uses: actions/setup-node@v6
         with:
           node-version: 22
           cache: npm
@@ -84,7 +84,7 @@ jobs:
       - run: sudo apt-get update && sudo apt-get install -y libfuse2 desktop-file-utils
       - run: npm run gulp -- "app:zip-linux"
       - run: npm run gulp -- "app:appimage-linux"
-      - uses: actions/upload-artifact@v4
+      - uses: actions/upload-artifact@v6
         with:
           name: linux
           path: |
@@ -92,11 +92,29 @@ jobs:
             build/sieve-NG-*-linux-x64.AppImage
           if-no-files-found: error
 
-  release:
-    needs: [thunderbird-and-web, windows, linux]
+  macos:
+    needs: test
+    runs-on: macos-latest
+    steps:
+      - uses: actions/checkout@v6
+      - uses: actions/setup-node@v6
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci
+      - run: npm run gulp -- "app:zip-macos"
+      - uses: actions/upload-artifact@v6
+        with:
+          name: macos
+          path: build/sieve-NG-*-macos-x64.zip
+          if-no-files-found: error
+`n  release:
+    permissions:
+      contents: write
+    needs: [thunderbird-and-web, windows, linux, macos]
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/download-artifact@v4
+      - uses: actions/download-artifact@v6
         with:
           path: release-assets
           merge-multiple: true
@@ -104,8 +122,8 @@ jobs:
         env:
           GH_TOKEN: ${{ github.token }}
         run: |
-          if gh release view "$RELEASE_TAG" >/dev/null 2>&1; then
-            gh release upload "$RELEASE_TAG" release-assets/* --clobber
+          ls -lah release-assets/`n          if gh release view "$RELEASE_TAG" --repo "$GITHUB_REPOSITORY" >/dev/null 2>&1; then
+            gh release upload "$RELEASE_TAG" release-assets/* --clobber --repo "$GITHUB_REPOSITORY"
           else
-            gh release create "$RELEASE_TAG" release-assets/* --title "sieve-NG $RELEASE_TAG" --generate-notes --verify-tag
+            gh release create "$RELEASE_TAG" release-assets/* --title "sieve-NG $RELEASE_TAG" --generate-notes --verify-tag --repo "$GITHUB_REPOSITORY"
           fi

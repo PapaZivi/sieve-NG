@@ -39,7 +39,8 @@ const WIN_PLATFORM = "win32";
 const LINUX_ARCH = "x64";
 const LINUX_PLATFORM = "linux";
 const MAC_ARCH = "x64";
-const MAC_PLATFORM = "mas";
+const MAC_PLATFORM = "darwin";
+const MAC_ARTIFACT_PLATFORM = "macos";
 
 const APP_IMAGE_RELEASE_URL = "https://api.github.com/repos/AppImage/appimagetool/releases";
 const APP_IMAGE_TOOL_NAME = "appimagetool-x86_64.AppImage";
@@ -394,7 +395,7 @@ async function zipMacOS() {
   const version = (await common.getPackageVersion()).join(".");
 
   const source = path.resolve(OUTPUT_DIR_APP_MACOS);
-  const destination = path.resolve(path.join(common.BASE_DIR_BUILD, `sieve-NG-${version}-${MAC_PLATFORM}-${MAC_ARCH}.zip`));
+  const destination = path.resolve(path.join(common.BASE_DIR_BUILD, `sieve-NG-${version}-${MAC_ARTIFACT_PLATFORM}-${MAC_ARCH}.zip`));
 
   if (existsSync(destination)) {
     logger.info(`Deleting ${path.basename(destination)}`);
