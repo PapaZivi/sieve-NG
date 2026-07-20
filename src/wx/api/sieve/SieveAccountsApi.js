@@ -61,11 +61,11 @@
             },
 
             async getUsername(id) {
-              return await getIncomingServer(id).realUsername;
+              return await getIncomingServer(id).username;
             },
 
             async getHostname(id) {
-              return await getIncomingServer(id).realHostName;
+              return await getIncomingServer(id).hostName;
             }
           }
         }

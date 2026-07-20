@@ -30,6 +30,10 @@ All of the third party source code is available under licenses which are both fr
 
 ## Icon
 
+sieve-NG uses its own project icon (`sieve-ng.svg`), which is available under
+the same AGPLv3 terms as the source code. The following notice applies only to
+the original upstream application icons retained in the source history:
+
 The application's icon is licensed from INCORS GmbH to this software project.
 The icons owner ship and copyright remain the property of INCORS GmbH.
 Within this software project the icon can be freely used any usage outside this

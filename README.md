@@ -1,4 +1,24 @@
-# Sieve Editor
+# sieve-NG
+
+> **Fork notice:** sieve-NG is an independent continuation of Thomas Schmid's
+> [Sieve](https://github.com/thsmi/sieve) project, updated for current versions
+> of Thunderbird. It is not an official release of the original project.
+
+The repository URLs in `package.json` use `OWNER` as a placeholder. Replace it
+with the GitHub account or organization that will host this fork before the
+first release.
+
+## Origin and acknowledgements
+
+sieve-NG is based on the [original Sieve project](https://github.com/thsmi/sieve)
+created and maintained by [Thomas Schmid](https://github.com/thsmi). The original
+copyright notices and contributor history are retained.
+
+Special thanks to [heeen](https://github.com/heeen), whose
+[TCPSocket compatibility solution (PR #1145)](https://github.com/thsmi/sieve/pull/1145)
+made connections work with modern Thunderbird versions. The related
+[hostname and username compatibility fix (PR #1144)](https://github.com/thsmi/sieve/pull/1144)
+was also contributed by heeen.
 
 [Sieve](http://en.wikipedia.org/wiki/Sieve_%28mail_filtering_language%29) is a
 powerful scripting language for server-side mail filtering. It is intended to

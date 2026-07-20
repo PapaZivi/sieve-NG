@@ -1,9 +1,9 @@
 {
-  "name": "Sieve",
+  "name": "sieve-NG",
   "description": "__MSG_extensionDescription__",
   "version": "0.6.1",
   "icons": {
-    "64": "libs/icons/linux.png"
+    "64": "libs/icons/sieve-ng.svg"
   },
   "background": {
     "page": "background.html"
@@ -12,17 +12,25 @@
   "default_locale": "en_US",
   "browser_specific_settings": {
     "gecko": {
-      "id": "sieve@mozdev.org",
-      "update_url": "https://thsmi.github.io/sieve/update.json",
-      "strict_min_version": "68.0a1"
+      "id": "sieve-ng@hightext.de",
+      "strict_min_version": "128.0"
     }
   },
   "permissions": [
     "accountsRead",
+    "menus",
     "tabs",
     "storage"
   ],
   "experiment_apis": {
+    "tcpSocket": {
+      "schema": "api/schemas/tcp_socket.json",
+      "parent": {
+        "scopes": ["addon_parent"],
+        "script": "api/parent/ext-tcp-socket.js",
+        "paths": [["tcpSocket"]]
+      }
+    },
     "SieveAccountsApi": {
       "schema": "api/sieve/SieveAccountsApi.json",
       "parent": {
@@ -34,36 +42,6 @@
           [
             "sieve",
             "accounts"
-          ]
-        ]
-      }
-    },
-    "SieveSocketApi": {
-      "schema": "api/sieve/SieveSocketApi.json",
-      "parent": {
-        "scopes": [
-          "addon_parent"
-        ],
-        "script": "api/sieve/SieveSocketApi.js",
-        "paths": [
-          [
-            "sieve",
-            "socket"
-          ]
-        ]
-      }
-    },
-    "SieveMenuApi": {
-      "schema": "api/sieve/SieveMenuApi.json",
-      "parent": {
-        "scopes": [
-          "addon_parent"
-        ],
-        "script": "api/sieve/SieveMenuApi.js",
-        "paths": [
-          [
-            "sieve",
-            "menu"
           ]
         ]
       }

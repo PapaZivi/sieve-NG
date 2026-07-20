@@ -1,0 +1,9 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" role="img" aria-label="sieve-NG">
+  <rect width="64" height="64" rx="12" fill="#176b87"/>
+  <path d="M13 15h38L37 33v13l-10 5V33z" fill="#fff"/>
+  <circle cx="23" cy="22" r="2" fill="#176b87"/>
+  <circle cx="30" cy="22" r="2" fill="#176b87"/>
+  <circle cx="37" cy="22" r="2" fill="#176b87"/>
+  <circle cx="44" cy="22" r="2" fill="#176b87"/>
+  <path d="M42 44h9v3h-9zm0-6h9v3h-9z" fill="#a8e6ff"/>
+</svg>

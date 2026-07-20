@@ -87,67 +87,19 @@ import { SieveAccounts } from "./libs/managesieve.ui/settings/logic/SieveAccount
 
   // ------------------------------------------------------------------------ //
 
-  /**
-   * Populates thunderbird's menus.
-   *
-   * @param {window} window
-   *   the window to which the menu items should be added.
-   */
-  function populateMenus(window) {
+  const MENU_ID = "sieve-script-editor";
 
-    // We can skip in case it is not a normal window.
-    if (`${window.type}` !== "normal")
-      return;
+  await browser.menus.create({
+    id: MENU_ID,
+    contexts: ["tools_menu"],
+    title: browser.i18n.getMessage("menuTitle")
+  });
 
-    const id = `${window.id}`;
+  browser.menus.onClicked.addListener(
+    async (info) => {
+      if (info.menuItemId !== MENU_ID)
+        return;
 
-    // populate the main menu
-    browser.sieve.menu.add(id, {
-      "id": "mnuSieveListDialog",
-      "type": "menu-label",
-      "reference": "filtersCmd",
-      "position": "before",
-      "label": browser.i18n.getMessage("menuTitle"),
-      "accesskey": browser.i18n.getMessage("menuAccessKey")
-    });
-
-    browser.sieve.menu.add(id, {
-      "id": "mnuSieveSeparator",
-      "type": "menu-separator",
-      "reference": "filtersCmd",
-      "position": "before"
-    });
-
-    // We need some magic here. They moved the filers menu item
-    // in Thunderbird 68
-    let ref;
-
-    if (browser.sieve.menu.has(id, "appmenu_filtersCmd"))
-      ref = "appmenu_filtersCmd";
-    else if (browser.sieve.menu.has(id, "appmenu_FilterMenu"))
-      ref = "appmenu_FilterMenu";
-    else
-      throw new Error("No app menu found");
-
-    browser.sieve.menu.add(id, {
-      "id": "appMenuSieveListDialog",
-      "type": "appmenu-label",
-      "reference": ref,
-      "label": browser.i18n.getMessage("menuTitle"),
-      "accesskey":browser.i18n.getMessage("menuAccessKey"),
-      "position": "before"
-    });
-
-    browser.sieve.menu.add(id, {
-      "id": "appMenuSieveSeparator",
-      "type": "appmenu-separator",
-      "reference": ref,
-      "position": "before"
-    });
-  }
-
-  await browser.sieve.menu.onCommand.addListener(
-    async () => {
       const url = new URL("./libs/managesieve.ui/accounts.html", window.location);
 
       const tabs = await browser.tabs.query({ url: url.toString() });
@@ -162,16 +114,6 @@ import { SieveAccounts } from "./libs/managesieve.ui/settings/logic/SieveAccount
         url: "./libs/managesieve.ui/accounts.html"
       });
     });
-
-
-  for (const window of await browser.windows.getAll()) {
-    populateMenus(window);
-  }
-
-  browser.windows.onCreated.addListener((window) => {
-    populateMenus(window);
-  });
-
 
   // ------------------------------------------------------------------------ //
 
@@ -196,13 +138,13 @@ import { SieveAccounts } from "./libs/managesieve.ui/settings/logic/SieveAccount
       return sessions.get(msg.payload.account).isConnecting();
     },
 
-    "account-connected": function (msg) {
+    "account-connected": async function (msg) {
       logger.logAction(`Is connected ${msg.payload.account}`);
 
       if (!sessions.has(msg.payload.account))
         return false;
 
-      return sessions.get(msg.payload.account).isConnected();
+      return await sessions.get(msg.payload.account).isConnected();
     },
 
     "account-connect": async function (msg) {
@@ -290,7 +232,7 @@ import { SieveAccounts } from "./libs/managesieve.ui/settings/logic/SieveAccount
           if (secInfo.isDomainMismatch)
             overrideBits |= ERROR_MISMATCH;
 
-          await (browser.sieve.socket.addCertErrorOverride(
+          await (browser.tcpSocket.addCertErrorOverride(
             secInfo.host, `${secInfo.port}`, secInfo.rawDER, overrideBits));
 
           await (actions["account-connect"](msg));

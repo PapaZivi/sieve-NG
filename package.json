@@ -1,7 +1,7 @@
 {
-  "name": "sieve",
+  "name": "sieve-ng",
   "version": "0.6.1",
-  "description": "Configures server-side sieve email filters",
+  "description": "A modern Thunderbird extension for managing server-side Sieve email filters",
   "main": "main_esm.js",
   "directories": {
     "doc": "docs",
@@ -32,12 +32,12 @@
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/thsmi/sieve.git"
+    "url": "git+https://github.com/OWNER/sieve-NG.git"
   },
   "author": "Thomas Schmid <schmid-thomas@gmx.net>",
   "license": "AGPL-3.0",
   "bugs": {
-    "url": "https://github.com/thsmi/sieve/issues"
+    "url": "https://github.com/OWNER/sieve-NG/issues"
   },
-  "homepage": "https://github.com/thsmi/sieve#readme"
+  "homepage": "https://github.com/OWNER/sieve-NG#readme"
 }
