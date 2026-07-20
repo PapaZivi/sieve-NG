@@ -1,6 +1,6 @@
 [Desktop Entry]
-Name=sieve
-Exec=sieve
+Name=sieve-NG
+Exec=sieve-ng
 Icon=sieve
 Type=Application
 Categories=Utility;

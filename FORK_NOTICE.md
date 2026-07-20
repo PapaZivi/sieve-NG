@@ -17,6 +17,3 @@ of the upstream project.
 
 The original copyright notices, contributor history and AGPLv3 license are
 retained. Changes made for sieve-NG are documented through the Git history.
-
-Before publishing, replace the `OWNER` placeholder in `package.json` with the
-GitHub account or organization hosting the repository.

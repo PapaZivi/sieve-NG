@@ -43,11 +43,11 @@ const MAC_PLATFORM = "mas";
 
 const APP_IMAGE_RELEASE_URL = "https://api.github.com/repos/AppImage/appimagetool/releases";
 const APP_IMAGE_TOOL_NAME = "appimagetool-x86_64.AppImage";
-const APP_IMAGE_DIR = path.join(OUTPUT_DIR_APP, "sieve.AppDir");
+const APP_IMAGE_DIR = path.join(OUTPUT_DIR_APP, "sieve-ng.AppDir");
 
-const OUTPUT_DIR_APP_WIN32 = path.join(OUTPUT_DIR_APP, `sieve-${WIN_PLATFORM}-${WIN_ARCH}`);
-const OUTPUT_DIR_APP_LINUX = path.join(OUTPUT_DIR_APP, `sieve-${LINUX_PLATFORM}-${LINUX_ARCH}`);
-const OUTPUT_DIR_APP_MACOS = path.join(OUTPUT_DIR_APP, `sieve-${MAC_PLATFORM}-${MAC_ARCH}`);
+const OUTPUT_DIR_APP_WIN32 = path.join(OUTPUT_DIR_APP, `sieve-ng-${WIN_PLATFORM}-${WIN_ARCH}`);
+const OUTPUT_DIR_APP_LINUX = path.join(OUTPUT_DIR_APP, `sieve-ng-${LINUX_PLATFORM}-${LINUX_ARCH}`);
+const OUTPUT_DIR_APP_MACOS = path.join(OUTPUT_DIR_APP, `sieve-ng-${MAC_PLATFORM}-${MAC_ARCH}`);
 
 const PERMISSIONS_EXECUTABLE = 0o100770;
 const PERMISSIONS_NORMAL = 0o100660;
@@ -269,7 +269,7 @@ async function zipWin32() {
   const version = (await common.getPackageVersion()).join(".");
 
   const source = path.resolve(OUTPUT_DIR_APP_WIN32);
-  const destination = path.join(common.BASE_DIR_BUILD, `sieve-${version}-${WIN_PLATFORM}-${WIN_ARCH}.zip`);
+  const destination = path.join(common.BASE_DIR_BUILD, `sieve-NG-${version}-${WIN_PLATFORM}-${WIN_ARCH}.zip`);
 
   await common.compress(source, destination);
 }
@@ -282,11 +282,11 @@ async function zipLinux() {
   const version = (await common.getPackageVersion()).join(".");
 
   const source = path.resolve(path.join(OUTPUT_DIR_APP_LINUX));
-  const destination = path.join(common.BASE_DIR_BUILD, `sieve-${version}-${LINUX_PLATFORM}-${LINUX_ARCH}.zip`);
+  const destination = path.join(common.BASE_DIR_BUILD, `sieve-NG-${version}-${LINUX_PLATFORM}-${LINUX_ARCH}.zip`);
 
   const options = {
     permissions: {
-      "sieve": PERMISSIONS_EXECUTABLE,
+      "sieve-ng": PERMISSIONS_EXECUTABLE,
       "*": PERMISSIONS_NORMAL
     }
   };
@@ -373,7 +373,7 @@ async function packageAppImage() {
   const version = (await common.getPackageVersion()).join(".");
 
   const source = path.resolve(APP_IMAGE_DIR);
-  const destination = path.resolve(path.join(common.BASE_DIR_BUILD, `sieve-${version}-${LINUX_PLATFORM}-${LINUX_ARCH}.AppImage`));
+  const destination = path.resolve(path.join(common.BASE_DIR_BUILD, `sieve-NG-${version}-${LINUX_PLATFORM}-${LINUX_ARCH}.AppImage`));
 
   logger.info(`Packaging app image`);
 
@@ -394,18 +394,18 @@ async function zipMacOS() {
   const version = (await common.getPackageVersion()).join(".");
 
   const source = path.resolve(OUTPUT_DIR_APP_MACOS);
-  const destination = path.resolve(path.join(common.BASE_DIR_BUILD, `sieve-${version}-${MAC_PLATFORM}-${MAC_ARCH}.zip`));
+  const destination = path.resolve(path.join(common.BASE_DIR_BUILD, `sieve-NG-${version}-${MAC_PLATFORM}-${MAC_ARCH}.zip`));
 
   if (existsSync(destination)) {
     logger.info(`Deleting ${path.basename(destination)}`);
     await unlink(destination);
   }
 
-  logger.info(`Compressing files ${source}/sieve.app`);
+  logger.info(`Compressing files ${source}/sieve-ng.app`);
   logger.info(`Creating ${path.basename(destination)}`);
 
   process.chdir(`${source}/`);
-  await (promisify(exec)(`zip -qry "${destination}" "sieve.app" 2>&1`));
+  await (promisify(exec)(`zip -qry "${destination}" "sieve-ng.app" 2>&1`));
 }
 
 export default {

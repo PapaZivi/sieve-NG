@@ -249,7 +249,7 @@ async function packageXpi() {
 
   const version = (await common.getPackageVersion()).join(".");
 
-  const destination = path.resolve(common.BASE_DIR_BUILD, `sieve-${version}.xpi`);
+  const destination = path.resolve(common.BASE_DIR_BUILD, `sieve-NG-${version}.xpi`);
   const source = path.resolve(`./${BUILD_DIR_WX}/`);
 
   await common.compress(source, destination);

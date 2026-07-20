@@ -1,0 +1,111 @@
+name: Release
+
+on:
+  push:
+    tags:
+      - "[0-9]+.[0-9]+.[0-9]+"
+  workflow_dispatch:
+    inputs:
+      tag:
+        description: Existing release tag to upload the packages to
+        required: true
+        default: "0.6.2"
+
+env:
+  RELEASE_TAG: ${{ github.event.inputs.tag || github.ref_name }}
+
+permissions:
+  contents: write
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci
+      - name: Verify tag and package version
+        run: node -e "if (require('./package.json').version !== process.env.RELEASE_TAG) process.exit(1)"
+      - run: npm run lint
+      - run: npm test
+
+  thunderbird-and-web:
+    needs: test
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci
+      - run: npm run gulp -- "wx:package-xpi"
+      - run: npm run gulp -- "web:package-zip"
+      - uses: actions/upload-artifact@v4
+        with:
+          name: thunderbird-and-web
+          path: |
+            build/sieve-NG-*.xpi
+            build/sieve-NG-*-web.zip
+          if-no-files-found: error
+
+  windows:
+    needs: test
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci
+      - run: npm run gulp -- "app:zip-win32"
+      - uses: actions/upload-artifact@v4
+        with:
+          name: windows
+          path: build/sieve-NG-*-win32-x64.zip
+          if-no-files-found: error
+
+  linux:
+    needs: test
+    runs-on: ubuntu-latest
+    env:
+      APPIMAGE_EXTRACT_AND_RUN: "1"
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci
+      - run: sudo apt-get update && sudo apt-get install -y libfuse2 desktop-file-utils
+      - run: npm run gulp -- "app:zip-linux"
+      - run: npm run gulp -- "app:appimage-linux"
+      - uses: actions/upload-artifact@v4
+        with:
+          name: linux
+          path: |
+            build/sieve-NG-*-linux-x64.zip
+            build/sieve-NG-*-linux-x64.AppImage
+          if-no-files-found: error
+
+  release:
+    needs: [thunderbird-and-web, windows, linux]
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/download-artifact@v4
+        with:
+          path: release-assets
+          merge-multiple: true
+      - name: Create or update GitHub release
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          if gh release view "$RELEASE_TAG" >/dev/null 2>&1; then
+            gh release upload "$RELEASE_TAG" release-assets/* --clobber
+          else
+            gh release create "$RELEASE_TAG" release-assets/* --title "sieve-NG $RELEASE_TAG" --generate-notes --verify-tag
+          fi

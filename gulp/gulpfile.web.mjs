@@ -154,7 +154,7 @@ async function packageZip() {
 
   const version = (await common.getPackageVersion()).join(".");
 
-  const destination = path.resolve(common.BASE_DIR_BUILD, `sieve-${version}-web.zip`);
+  const destination = path.resolve(common.BASE_DIR_BUILD, `sieve-NG-${version}-web.zip`);
   const source = path.resolve(`./${BUILD_DIR_WEB}/`);
 
   await common.compress(source, destination);

@@ -1,6 +1,6 @@
 {
   "name": "sieve-ng",
-  "version": "0.6.1",
+  "version": "0.6.2",
   "description": "A modern Thunderbird extension for managing server-side Sieve email filters",
   "main": "main_esm.js",
   "directories": {
@@ -22,7 +22,7 @@
     "yazl": "^3.3.1"
   },
   "scripts": {
-    "start-win32": "gulp \"app:package-win32\" && cd ./build/electron/out/sieve-win32-x64/ && sieve.exe",
+    "start-win32": "gulp \"app:package-win32\" && cd ./build/electron/out/sieve-ng-win32-x64/ && sieve-ng.exe",
     "start": "cd node_modules/.bin && electron ./../../build/electron/resources",
     "debug": "cd node_modules/.bin && electron ./../../build/electron/resources --debug",
     "test": "gulp \"test:package\" && node ./tests/index.js ./build/test/app",
@@ -32,12 +32,12 @@
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/OWNER/sieve-NG.git"
+    "url": "git+https://github.com/PapaZivi/sieve-NG.git"
   },
   "author": "Thomas Schmid <schmid-thomas@gmx.net>",
   "license": "AGPL-3.0",
   "bugs": {
-    "url": "https://github.com/OWNER/sieve-NG/issues"
+    "url": "https://github.com/PapaZivi/sieve-NG/issues"
   },
-  "homepage": "https://github.com/OWNER/sieve-NG#readme"
+  "homepage": "https://github.com/PapaZivi/sieve-NG#readme"
 }
