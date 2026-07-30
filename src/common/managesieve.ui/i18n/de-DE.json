@@ -45,7 +45,7 @@
   "account.delete.description2": "wirklich löschen?",
   "account.delete.accept": "Löschen",
   "account.details.delete.title": "Gefahrenbereich",
-  "account.details.delete.description": "Diese Konfiguration löschen. Ihr Account auf Ihrem Mail-Server bleibt unverändert, es werden keine Skripte werden gelöscht und das aktive Skript bleibt weiterhin aktiv.",
+  "account.details.delete.description": "Diese Konfiguration löschen. Ihr Account auf Ihrem Mail-Server bleibt unverändert, es werden keine Skripte gelöscht und das aktive Skript bleibt weiterhin aktiv.",
   "account.details.delete": "Server löschen",
   "account.settings": "Einstellungen",
   "account.newscript": "Neues Skript",
