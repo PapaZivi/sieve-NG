@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Wix xmlns="http://wixtoolset.org/schemas/v4/wxs">
+  <Package
+    Name="sieve-NG"
+    Manufacturer="sieve-NG Project"
+    Version="$(Version)"
+    UpgradeCode="6BCD63F5-9BDA-452E-A6FD-B0667E8AA926"
+    Scope="perMachine"
+    Compressed="yes">
+
+    <MajorUpgrade
+      DowngradeErrorMessage="Eine neuere Version von sieve-NG ist bereits installiert." />
+
+    <MediaTemplate EmbedCab="yes" CompressionLevel="high" />
+
+    <StandardDirectory Id="ProgramFiles64Folder">
+      <Directory Id="INSTALLFOLDER" Name="sieve-NG">
+        <Files Include="$(SourceDir)\**">
+          <Exclude Files="$(SourceDir)\$(ExeName)" />
+        </Files>
+
+        <File Id="MainExecutable" Source="$(SourceDir)\$(ExeName)">
+          <Shortcut
+            Id="StartMenuShortcut"
+            Directory="ProgramMenuFolder"
+            Name="sieve-NG"
+            Description="Sieve Script Editor"
+            WorkingDirectory="INSTALLFOLDER" />
+        </File>
+      </Directory>
+    </StandardDirectory>
+  </Package>
+</Wix>
