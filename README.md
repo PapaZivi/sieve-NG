@@ -100,3 +100,5 @@ Continuous builds are triggered upon each change to the master. You can find the
 |---------|-------|-------|--------------|
 
 Click on the test or build status to see more details or to [download nightly build Artifacts](https://github.com/thsmi/sieve/wiki/FAQ---General-Questions#nightly-build-artifacts). The later can be accessed by selecting a build and then clicking on "Published" in the "Related" section.
+
+Free code signing provided by SignPath.io, certificate by SignPath Foundation.
