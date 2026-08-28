@@ -173,7 +173,14 @@ jobs:
         run: |
           ls -lah release-assets/
           if gh release view "$RELEASE_TAG" --repo "$GITHUB_REPOSITORY" >/dev/null 2>&1; then
-            gh release upload "$RELEASE_TAG" release-assets/* --clobber --repo "$GITHUB_REPOSITORY"
+            gh release upload "$RELEASE_TAG" release-assets/* \
+            --clobber \
+            --repo "$GITHUB_REPOSITORY"
           else
-            gh release create "$RELEASE_TAG" release-assets/* --title "sieve-NG $RELEASE_TAG" --generate-notes --verify-tag --repo "$GITHUB_REPOSITORY"
+            gh release create "$RELEASE_TAG" release-assets/* \
+              --title "sieve-NG $RELEASE_TAG" \
+              --notes "Free code signing provided by SignPath.io, certificate by SignPath Foundation." \
+              --generate-notes \
+              --verify-tag \
+              --repo "$GITHUB_REPOSITORY"
           fi
