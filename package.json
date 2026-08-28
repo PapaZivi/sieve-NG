@@ -1,6 +1,6 @@
 {
   "name": "sieve-ng",
-  "version": "0.6.3",
+  "version": "0.6.4",
   "description": "A modern Thunderbird extension for managing server-side Sieve email filters",
   "main": "main_esm.js",
   "directories": {
