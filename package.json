@@ -1,6 +1,6 @@
 {
   "name": "sieve-ng",
-  "version": "0.6.2",
+  "version": "0.6.3",
   "description": "A modern Thunderbird extension for managing server-side Sieve email filters",
   "main": "main_esm.js",
   "directories": {
@@ -10,14 +10,11 @@
   "devDependencies": {
     "electron": "^35.0.1",
     "@electron/packager": "^18.3.6",
-
     "bootstrap": "^5.3.3",
     "codemirror": "^5.65.4",
-
     "@eslint/js": "^9.22.0",
     "eslint-plugin-jsdoc": "^50.6.6",
     "globals": "^16.0.0",
-
     "gulp": "^5.0.0",
     "yazl": "^3.3.1"
   },
