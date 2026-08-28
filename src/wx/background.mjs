@@ -87,7 +87,24 @@ import { SieveAccounts } from "./libs/managesieve.ui/settings/logic/SieveAccount
 
   // ------------------------------------------------------------------------ //
 
+  const openEditor = async () => {
+    const url = new URL("./libs/managesieve.ui/accounts.html", window.location);
+    const tabs = await browser.tabs.query({ url: url.toString() });
+
+    if (tabs.length) {
+      await showTab(tabs[FIRST_ENTRY]);
+      return;
+    }
+
+    await browser.tabs.create({
+      active: true,
+      url: "./libs/managesieve.ui/accounts.html"
+    });
+  };
+
   const MENU_ID = "sieve-script-editor";
+  const APP_MENU_ID = "appMenuSieveListDialog";
+  const APP_MENU_SEPARATOR_ID = "appMenuSieveSeparator";
 
   await browser.menus.create({
     id: MENU_ID,
@@ -95,25 +112,69 @@ import { SieveAccounts } from "./libs/managesieve.ui/settings/logic/SieveAccount
     title: browser.i18n.getMessage("menuTitle")
   });
 
-  browser.menus.onClicked.addListener(
-    async (info) => {
-      if (info.menuItemId !== MENU_ID)
-        return;
+  browser.menus.onClicked.addListener(async (info) => {
+    if (info.menuItemId !== MENU_ID)
+      return;
 
-      const url = new URL("./libs/managesieve.ui/accounts.html", window.location);
+    await openEditor();
+  });
 
-      const tabs = await browser.tabs.query({ url: url.toString() });
+  browser.sieve.menu.onCommand.addListener(async (_windowId, id) => {
+    if (id !== APP_MENU_ID)
+      return;
 
-      if (tabs.length) {
-        await showTab(tabs[FIRST_ENTRY]);
-        return;
-      }
+    await openEditor();
+  });
 
-      await browser.tabs.create({
-        active: true,
-        url: "./libs/managesieve.ui/accounts.html"
+  /**
+   * Adds Sieve to Thunderbird's hamburger menu under Tools.
+   *
+   * @param {object} currentWindow
+   *   The Thunderbird window to populate.
+   */
+  async function populateAppMenu(currentWindow) {
+    if (`${currentWindow.type}` !== "normal")
+      return;
+
+    const windowId = `${currentWindow.id}`;
+    const references = ["appmenu_filtersCmd", "appmenu_FilterMenu"];
+
+    for (const reference of references) {
+      if (!await browser.sieve.menu.has(windowId, reference))
+        continue;
+
+      await browser.sieve.menu.add(windowId, {
+        id: APP_MENU_ID,
+        type: "appmenu-label",
+        reference,
+        position: "before",
+        label: browser.i18n.getMessage("menuTitle"),
+        accesskey: browser.i18n.getMessage("menuAccessKey")
       });
+
+      await browser.sieve.menu.add(windowId, {
+        id: APP_MENU_SEPARATOR_ID,
+        type: "appmenu-separator",
+        reference,
+        position: "before"
+      });
+
+      return;
+    }
+
+    logger.logAction("Thunderbird Tools app menu not found");
+  }
+
+  for (const currentWindow of await browser.windows.getAll())
+    populateAppMenu(currentWindow).catch((ex) => {
+      logger.logAction(`Could not populate app menu: ${ex}`);
     });
+
+  browser.windows.onCreated.addListener((currentWindow) => {
+    populateAppMenu(currentWindow).catch((ex) => {
+      logger.logAction(`Could not populate app menu: ${ex}`);
+    });
+  });
 
   // ------------------------------------------------------------------------ //
 
@@ -398,6 +459,28 @@ import { SieveAccounts } from "./libs/managesieve.ui/settings/logic/SieveAccount
       await sessions.get(account).putScript(name, script);
     },
 
+    "account-get-server": async function (msg) {
+      const host = await accounts.getAccountById(msg.payload.account).getHost();
+
+      return {
+        displayName: await host.getDisplayName(),
+        hostname: await host.getHostname(),
+        port: await host.getPort(),
+        fingerprint: await host.getFingerprint(),
+        keepAlive: await host.getKeepAlive()
+      };
+    },
+
+    "account-set-server": async function (msg) {
+      const host = await accounts.getAccountById(msg.payload.account).getHost();
+
+      await host.setDisplayName(msg.payload.displayName);
+      await host.setHostname(msg.payload.hostname);
+      await host.setPort(msg.payload.port);
+      await host.setFingerprint(msg.payload.fingerprint);
+      await host.setKeepAlive(msg.payload.keepAlive);
+    },
+
     "account-get-settings": async function (msg) {
 
       logger.logAction(`Get settings for ${msg.payload.account}`);
@@ -406,16 +489,21 @@ import { SieveAccounts } from "./libs/managesieve.ui/settings/logic/SieveAccount
       const host = await account.getHost();
       const authentication = await account.getAuthentication();
       const security = await account.getSecurity();
+      const read = async (name, callback) => {
+        try {
+          return await callback();
+        } catch (ex) {
+          throw new Error(name + ": " + (ex?.message || String(ex)));
+        }
+      };
 
       return {
-        displayName: await host.getDisplayName(),
-        hostname: await host.getHostname(),
-        port: await host.getPort(),
-
-        security: await security.getTLS(),
-        mechanism: await security.getMechanism(),
-
-        username: await authentication.getUsername()
+        displayName: await read("displayName", () => { return host.getDisplayName(); }),
+        hostname: await read("hostname", () => { return host.getHostname(); }),
+        port: await read("port", () => { return host.getPort(); }),
+        security: await read("TLS", () => { return security.getTLS(); }),
+        mechanism: await read("mechanism", () => { return security.getMechanism(); }),
+        username: await read("username", () => { return authentication.getUsername(); })
       };
     },
 

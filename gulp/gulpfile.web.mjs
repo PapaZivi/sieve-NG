@@ -152,7 +152,7 @@ function packageManageSieveUiApp() {
  */
 async function packageZip() {
 
-  const version = (await common.getPackageVersion()).join(".");
+  const version = (await common.getAddonVersion()).join(".");
 
   const destination = path.resolve(common.BASE_DIR_BUILD, `sieve-NG-${version}-web.zip`);
   const source = path.resolve(`./${BUILD_DIR_WEB}/`);

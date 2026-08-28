@@ -267,7 +267,7 @@ function watch() {
  */
 async function zipWin32() {
 
-  const version = (await common.getPackageVersion()).join(".");
+  const version = (await common.getAddonVersion()).join(".");
 
   const source = path.resolve(OUTPUT_DIR_APP_WIN32);
   const destination = path.join(common.BASE_DIR_BUILD, `sieve-NG-${version}-${WIN_PLATFORM}-${WIN_ARCH}.zip`);
@@ -280,7 +280,7 @@ async function zipWin32() {
  */
 async function zipLinux() {
 
-  const version = (await common.getPackageVersion()).join(".");
+  const version = (await common.getAddonVersion()).join(".");
 
   const source = path.resolve(path.join(OUTPUT_DIR_APP_LINUX));
   const destination = path.join(common.BASE_DIR_BUILD, `sieve-NG-${version}-${LINUX_PLATFORM}-${LINUX_ARCH}.zip`);
@@ -371,7 +371,7 @@ async function packageAppImage() {
 
   await chmod(path.resolve(path.join(APP_IMAGE_DIR, "AppRun")), RWX_RWX_RX);
 
-  const version = (await common.getPackageVersion()).join(".");
+  const version = (await common.getAddonVersion()).join(".");
 
   const source = path.resolve(APP_IMAGE_DIR);
   const destination = path.resolve(path.join(common.BASE_DIR_BUILD, `sieve-NG-${version}-${LINUX_PLATFORM}-${LINUX_ARCH}.AppImage`));
@@ -392,7 +392,7 @@ async function packageAppImage() {
  */
 async function zipMacOS() {
 
-  const version = (await common.getPackageVersion()).join(".");
+  const version = (await common.getAddonVersion()).join(".");
 
   const source = path.resolve(OUTPUT_DIR_APP_MACOS);
   const destination = path.resolve(path.join(common.BASE_DIR_BUILD, `sieve-NG-${version}-${MAC_ARTIFACT_PLATFORM}-${MAC_ARCH}.zip`));

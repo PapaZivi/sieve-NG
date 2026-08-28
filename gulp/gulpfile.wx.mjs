@@ -238,7 +238,7 @@ function watchSrc() {
  */
 async function updateVersion() {
 
-  const pkgVersion = await common.getPackageVersion();
+  const pkgVersion = await common.getAddonVersion();
   await common.setPackageVersion(pkgVersion, './src/wx/manifest.json');
 }
 
@@ -247,7 +247,7 @@ async function updateVersion() {
  */
 async function packageXpi() {
 
-  const version = (await common.getPackageVersion()).join(".");
+  const version = (await common.getAddonVersion()).join(".");
 
   const destination = path.resolve(common.BASE_DIR_BUILD, `sieve-NG-${version}.xpi`);
   const source = path.resolve(`./${BUILD_DIR_WX}/`);
@@ -264,6 +264,7 @@ export default {
   packageSrc,
 
   packageWx: gulp.series(
+    updateVersion,
     gulp.parallel(
       packageCodeMirror,
       packageBootstrap,

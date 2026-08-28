@@ -265,12 +265,29 @@ async function getPackageVersion(file) {
 }
 
 /**
+ * Gets the Thunderbird add-on version from package.json.
+ *
+ * @returns {string[]}
+ *   the numeric version components
+ */
+async function getAddonVersion() {
+
+  const data = JSON.parse(await readFile("./package.json", "utf8"));
+  const version = data.addonVersion ?? data.version;
+
+  if (!/^(0|[1-9]\d*)(\.(0|[1-9]\d*)){0,3}$/.test(version))
+    throw new Error(`Invalid Thunderbird add-on version: ${version}`);
+
+  return version.split(".");
+}
+
+/**
  * Updates the version in a package json file.
  *
- * @param {string} version
- *   the new version string
+ * @param {string[]} version
+ *   the new version components
  * @param {string} [file]
- *   the path to the npm package json file.
+ *   the path to the package or manifest json file
  */
 async function setPackageVersion(version, file) {
 
@@ -350,7 +367,7 @@ async function bumpPatchVersion() {
  */
 async function updateVersion() {
 
-  const version = (await getPackageVersion()).join(".");
+  const version = (await getAddonVersion()).join(".");
 
   const data = JSON.parse(await readFile("./docs/update.json", 'utf8'));
   const addonId = "sieve-ng@hightext.de";
@@ -474,6 +491,7 @@ export default {
   packageManageSieveUi: packageManageSieveUi,
 
   getPackageVersion: getPackageVersion,
+  getAddonVersion: getAddonVersion,
   setPackageVersion: setPackageVersion,
 
   bumpMajorVersion: bumpMajorVersion,

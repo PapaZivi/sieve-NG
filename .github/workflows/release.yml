@@ -3,13 +3,13 @@ name: Release
 on:
   push:
     tags:
-      - "[0-9]+.[0-9]+.[0-9]+"
+      - "[0-9][0-9].[0-9]*"
   workflow_dispatch:
     inputs:
       tag:
         description: Existing release tag to upload the packages to
         required: true
-        default: "0.6.2"
+        default: "26.8"
 
 env:
   RELEASE_TAG: ${{ github.event.inputs.tag || github.ref_name }}
@@ -28,7 +28,7 @@ jobs:
           cache: npm
       - run: npm ci
       - name: Verify tag and package version
-        run: node -e "if (require('./package.json').version !== process.env.RELEASE_TAG) process.exit(1)"
+        run: node -e "if (!/^\d{2}\.(?:[1-9]|1[0-2])(?:\.[1-9]\d*)?$/.test(process.env.RELEASE_TAG) || (require('./package.json').addonVersion || require('./package.json').version) !== process.env.RELEASE_TAG) process.exit(1)"
       - run: npm run lint
       - run: npm test
 
@@ -97,12 +97,13 @@ jobs:
             throw "Die Haupt-EXE im Windows-Build wurde nicht gefunden."
           }
 
-          $version = (Get-Content package.json -Raw | ConvertFrom-Json).version
+          $packageVersion = (Get-Content package.json -Raw | ConvertFrom-Json).version
+          $version = $env:RELEASE_TAG
           $output = "build/sieve-NG-$version-win32-x64.msi"
 
           wix build "installer/windows/sieve-ng.wxs" `
             -arch x64 `
-            -d "Version=$version" `
+            -d "Version=$packageVersion" `
             -d "SourceDir=$($appDir.FullName)" `
             -d "ExeName=$($appExe.Name)" `
             -pdbtype none `
@@ -167,6 +168,10 @@ jobs:
         with:
           path: release-assets
           merge-multiple: true
+      - name: Generate Thunderbird update manifest
+        shell: bash
+        run: |
+          node -e 'const fs = require("fs"); const version = process.env.RELEASE_TAG; const repository = process.env.GITHUB_REPOSITORY; const base = "https://github.com/" + repository + "/releases"; const update = { addons: { "sieve-ng@hightext.de": { updates: [{ version: version, update_link: base + "/download/" + version + "/sieve-NG-" + version + ".xpi", update_info_url: base + "/tag/" + version, browser_specific_settings: { gecko: { strict_min_version: "128.0", strict_max_version: "154.*" } } }] } } }; fs.writeFileSync("release-assets/update.json", JSON.stringify(update, null, 2) + "\n");'
       - name: Create or update GitHub release
         env:
           GH_TOKEN: ${{ github.token }}
@@ -179,7 +184,6 @@ jobs:
           else
             gh release create "$RELEASE_TAG" release-assets/* \
               --title "sieve-NG $RELEASE_TAG" \
-              --notes "Free code signing provided by SignPath.io, certificate by SignPath Foundation." \
               --generate-notes \
               --verify-tag \
               --repo "$GITHUB_REPOSITORY"

@@ -129,7 +129,7 @@ async function main() {
   });
 
   ipcMain.handle("get-version", async() => {
-    return await app.getVersion();
+    return (await app.getVersion()).replace(/\.0$/u, "");
   });
 
   ipcMain.handle("open-developer-tools", () => {
