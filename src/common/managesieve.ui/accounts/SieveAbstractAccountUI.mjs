@@ -74,6 +74,16 @@ class SieveAbstractAccountUI {
 
     return await SieveIpcClient.sendMessage("core", action, payload);
   }
+  /**
+   * Checks whether this account should use the compact hidden view.
+   *
+   * @returns {boolean}
+   *   true when the account is hidden
+   */
+  async isHidden() {
+    return false;
+  }
+
 
   /**
    * Checks if the account is currently in the connecting phase.

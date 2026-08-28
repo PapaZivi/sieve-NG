@@ -11,12 +11,73 @@
 
 import { SieveAbstractAccountUI } from "./SieveAbstractAccountUI.mjs";
 import { SieveServerSettingsUI } from "./../settings/ui/SieveServerSettingsUI.mjs";
+import { SieveTemplate } from "./../utils/SieveTemplate.mjs";
 
 
 /**
  * A UI renderer for a sieve account
  */
 class SieveMozAccountUI extends SieveAbstractAccountUI {
+  /**
+   * @inheritdoc
+   */
+  async isHidden() {
+    return await this.send("account-is-hidden");
+  }
+
+  /**
+   * Persists visibility without touching any server settings.
+   *
+   * @param {boolean} hidden
+   *   true to use the compact hidden view
+   */
+  async setHidden(hidden) {
+    await this.send("account-set-hidden", { hidden });
+    await this.accounts.render();
+  }
+
+  /**
+   * Renders a hidden account as a compact activation row.
+   */
+  async renderHidden() {
+    document.querySelector(`#siv-account-${this.id}`)?.remove();
+
+    const item = await (new SieveTemplate()).load("./accounts/account.hidden.html");
+    item.id = `siv-account-${this.id}`;
+    item.querySelector(".siv-account-name").textContent
+      = await this.send("account-get-displayname");
+    item.querySelector(".sieve-account-show")
+      .addEventListener("click", () => { this.setHidden(false); });
+
+    document.querySelector(".siv-accounts-items").append(item);
+  }
+
+  /**
+   * @inheritdoc
+   */
+  async render() {
+    if (await this.isHidden()) {
+      await this.renderHidden();
+      return;
+    }
+
+    const item = document.querySelector(`#siv-account-${this.id}`);
+    if (item?.classList.contains("sieve-account-hidden"))
+      item.remove();
+
+    await super.render();
+  }
+
+  /**
+   * @inheritdoc
+   */
+  async renderAccount() {
+    await super.renderAccount();
+
+    document.querySelector(`#siv-account-${this.id} .sieve-account-hide`)
+      .addEventListener("click", () => { this.setHidden(true); });
+  }
+
 
   /**
    * Adds the editable server settings action to the account details.

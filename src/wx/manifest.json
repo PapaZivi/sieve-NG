@@ -1,7 +1,7 @@
 {
   "name": "sieve-NG",
   "description": "__MSG_extensionDescription__",
-  "version": "26.8",
+  "version": "26.8.1",
   "icons": {
     "64": "libs/icons/sieve-ng.svg"
   },

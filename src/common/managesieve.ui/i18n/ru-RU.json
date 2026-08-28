@@ -93,6 +93,8 @@
   "account.disconnect": "Отключить",
   "account.reconnect": "Переподключить",
   "account.capabilities.show": "Показать возможности сервера",
+  "account.hide": "Hide Server",
+  "account.show": "Activate",
   "account.details.title": "Детали учетной записи",
   "account.details.server": "Сервер",
   "account.details.secure": "(Защищенное соединение)",

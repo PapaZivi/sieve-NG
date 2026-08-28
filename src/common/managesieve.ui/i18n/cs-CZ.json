@@ -93,6 +93,8 @@
   "account.disconnect": "Odpojit",
   "account.reconnect": "Znovu připojit",
   "account.capabilities.show": "Zobrazit schopnosti serveru",
+  "account.hide": "Hide Server",
+  "account.show": "Activate",
   "account.details.title": "Podrobnosti účtu",
   "account.details.server": "Server",
   "account.details.secure": "(Zabezpečené připojení)",

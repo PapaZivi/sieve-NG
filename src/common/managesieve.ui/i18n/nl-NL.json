@@ -93,6 +93,8 @@
   "account.disconnect": "Verbinding verbreken",
   "account.reconnect": "Opnieuw verbinden",
   "account.capabilities.show": "Servermogelijkheden tonen",
+  "account.hide": "Hide Server",
+  "account.show": "Activate",
   "account.details.title": "Accountdetails",
   "account.details.server": "Server",
   "account.details.secure": "(beveiligde verbinding)",

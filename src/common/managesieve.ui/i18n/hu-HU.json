@@ -93,6 +93,8 @@
   "account.disconnect": "Kapcsolat bontása",
   "account.reconnect": "Újracsatlakozás",
   "account.capabilities.show": "Kiszolgálói képesség mutatása",
+  "account.hide": "Hide Server",
+  "account.show": "Activate",
   "account.details.title": "Fiók adatai",
   "account.details.server": "Kiszolgáló",
   "account.details.secure": "(Biztonságos kapcsolat)",

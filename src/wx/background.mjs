@@ -189,6 +189,21 @@ import { SieveAccounts } from "./libs/managesieve.ui/settings/logic/SieveAccount
       const host = await accounts.getAccountById(msg.payload.account).getHost();
       return await host.getDisplayName();
     },
+    "account-is-hidden": async function (msg) {
+      const account = accounts.getAccountById(msg.payload.account);
+      return await account.getConfig().getBoolean("ui.hidden", false);
+    },
+
+    "account-set-hidden": async function (msg) {
+      const account = accounts.getAccountById(msg.payload.account);
+      const hidden = msg.payload.hidden === true;
+
+      await account.getConfig().setBoolean("ui.hidden", hidden);
+
+      if (hidden && sessions.has(msg.payload.account))
+        await actions["account-disconnect"](msg);
+    },
+
 
     "account-is-connecting": function(msg) {
       logger.logAction(`Is connecting ${msg.payload.account}`);

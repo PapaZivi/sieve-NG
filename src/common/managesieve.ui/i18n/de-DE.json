@@ -93,6 +93,8 @@
   "account.disconnect": "Verbindung trennen",
   "account.reconnect": "Erneut verbinden",
   "account.capabilities.show": "Server-Eigenschaften anzeigen",
+  "account.hide": "Server ausblenden",
+  "account.show": "Aktivieren",
   "account.details.title": "Kontoeinstellungen",
   "account.details.server": "Server",
   "account.details.secure": "(Gesicherte Verbindung)",

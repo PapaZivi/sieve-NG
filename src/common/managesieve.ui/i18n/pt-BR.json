@@ -93,6 +93,8 @@
   "account.disconnect": "Disconnect",
   "account.reconnect": "Reconnect",
   "account.capabilities.show": "Show Server Capabilities",
+  "account.hide": "Hide Server",
+  "account.show": "Activate",
   "account.details.title": "Account Details",
   "account.details.server": "Server",
   "account.details.secure": "(Secure connection)",

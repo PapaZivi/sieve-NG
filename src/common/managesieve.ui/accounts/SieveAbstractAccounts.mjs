@@ -50,10 +50,19 @@ class SieveAbstractAccounts {
       items.firstChild.remove();
 
     const accounts = await SieveIpcClient.sendMessage("core", "accounts-list");
+    const visible = [];
+    const hidden = [];
 
-    for (const item of accounts) {
-      await this.render(item);
+    for (const id of accounts) {
+      const item = new SieveAccountUI(this, id);
+      if (await item.isHidden())
+        hidden.push(item);
+      else
+        visible.push(item);
     }
+
+    for (const item of [...visible, ...hidden])
+      await item.render();
   }
 }
 
