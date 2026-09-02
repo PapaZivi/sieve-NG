@@ -1,0 +1,116 @@
+name: Thunderbird compatibility
+
+on:
+  workflow_dispatch:
+  schedule:
+    - cron: "17 5 * * 1"
+
+permissions:
+  contents: read
+
+concurrency:
+  group: thunderbird-compatibility-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  smoke-test:
+    name: ${{ matrix.channel }}
+    runs-on: ubuntu-24.04
+    timeout-minutes: 25
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - channel: release
+            product: thunderbird-latest-ssl
+          - channel: beta
+            product: thunderbird-beta-latest-ssl
+          - channel: daily
+            product: thunderbird-nightly-latest-ssl
+
+    steps:
+      - uses: actions/checkout@v7
+
+      - name: Install Thunderbird runtime libraries
+        run: |
+          sudo apt-get update
+          sudo apt-get install --yes \
+            libasound2t64 \
+            libdbus-glib-1-2 \
+            libgtk-3-0t64 \
+            libx11-xcb1
+
+      - uses: actions/setup-node@v7
+        with:
+          node-version: 22
+          cache: npm
+
+      - uses: actions/setup-python@v7
+        with:
+          python-version: "3.13"
+          cache: pip
+          cache-dependency-path: tools/compatibility/requirements.txt
+
+      - name: Install project and test dependencies
+        run: |
+          npm ci
+          python -m pip install --requirement tools/compatibility/requirements.txt
+
+      - name: Build compatibility-test XPI
+        run: |
+          npm run gulp -- "wx:package"
+          node -e 'const fs = require("node:fs"); const file = "build/wx/manifest.json"; const manifest = JSON.parse(fs.readFileSync(file)); manifest.browser_specific_settings.gecko.strict_max_version = "*"; fs.writeFileSync(file, JSON.stringify(manifest, null, 2) + "\n");'
+          cd build/wx
+          zip -qr ../sieve-ng-compatibility.xpi .
+
+      - name: Download Thunderbird ${{ matrix.channel }}
+        env:
+          THUNDERBIRD_PRODUCT: ${{ matrix.product }}
+        run: |
+          curl --fail --location --retry 3 \
+            --output thunderbird.tar.xz \
+            "https://download.mozilla.org/?product=${THUNDERBIRD_PRODUCT}&os=linux64&lang=en-US"
+          mkdir thunderbird-dist
+          tar --extract --xz --file thunderbird.tar.xz --directory thunderbird-dist
+          thunderbird-dist/thunderbird/thunderbird --version
+
+      - name: Start disposable ManageSieve server
+        run: |
+          docker build --file tools/Docker/dovecot/dockerfile \
+            --tag sieve-ng-dovecot tools/Docker/dovecot
+          docker run --detach --name sieve-ng-dovecot \
+            --publish 143:143 --publish 4190:4190 sieve-ng-dovecot
+          timeout 30 bash -c 'until echo > /dev/tcp/127.0.0.1/4190; do sleep 1; done'
+
+      - name: Create isolated Thunderbird profile
+        run: |
+          node tools/compatibility/create-test-profile.mjs \
+            build/compatibility-profile build/sieve-ng-compatibility.xpi
+
+      - name: Run Thunderbird smoke test
+        run: |
+          set -o pipefail
+          thunderbird-dist/thunderbird/thunderbird \
+            --headless --marionette --no-remote --remote-allow-system-access \
+            --profile "$PWD/build/compatibility-profile" \
+            > build/thunderbird.log 2>&1 &
+          thunderbird_pid=$!
+          trap 'kill "$thunderbird_pid" 2>/dev/null || true' EXIT
+          python tools/compatibility/thunderbird-smoke-test.py \
+            2>&1 | tee build/smoke-test.log
+
+      - name: Collect server logs
+        if: always()
+        run: docker logs sieve-ng-dovecot > build/dovecot.log 2>&1 || true
+
+      - name: Upload diagnostic logs
+        if: always()
+        uses: actions/upload-artifact@v7
+        with:
+          name: compatibility-${{ matrix.channel }}-logs
+          path: |
+            build/smoke-test.log
+            build/thunderbird.log
+            build/dovecot.log
+          if-no-files-found: ignore
+          retention-days: 14
