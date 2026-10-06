@@ -165,6 +165,22 @@ class SieveBracketComment extends SieveAbstractElement {
   toScript() {
     return "/*" + this.text + "*/";
   }
+
+  /**
+   * Gets or sets the comment text without its delimiters.
+   *
+   * @param {string} [value]
+   *   the new comment text
+   * @returns {string|SieveBracketComment}
+   *   the current text or a self reference
+   */
+  value(value) {
+    if (typeof (value) === "undefined")
+      return this.text;
+
+    this.text = value.replace(/\*\//g, "* /");
+    return this;
+  }
 }
 
 /**
@@ -220,6 +236,78 @@ class SieveHashComment extends SieveAbstractElement {
    */
   toScript() {
     return "#" + this.text + "\r\n";
+  }
+
+  /**
+   * Gets or sets the comment text without the leading hash character.
+   *
+   * @param {string} [value]
+   *   the new comment text
+   * @returns {string|SieveHashComment}
+   *   the current text or a self reference
+   */
+  value(value) {
+    if (typeof (value) === "undefined")
+      return this.text;
+
+    this.text = value.replace(/[\r\n]/g, " ");
+    return this;
+  }
+}
+
+/**
+ * A conventional rule-name marker. It remains a valid Sieve hash comment,
+ * while the graphical editor exposes only the name between the brackets.
+ */
+class SieveRuleNameComment extends SieveHashComment {
+
+  /**
+   * @inheritdoc
+   */
+  // eslint-disable-next-line no-unused-vars
+  static isElement(parser, lexer) {
+    const prefix = "# rule:[";
+    const line = parser.bytes().split("\r\n", 1)[0];
+
+    if (!line.startsWith(prefix) || !line.endsWith("]"))
+      return false;
+
+    return !line.slice(prefix.length, -1).includes("]");
+  }
+
+  /**
+   * @inheritdoc
+   */
+  static nodeName() {
+    return "comment/rulename";
+  }
+
+  /**
+   * @inheritdoc
+   */
+  init(parser) {
+    parser.extract("# rule:[");
+    this.text = parser.extractUntil("]");
+    parser.extractUntil("\r\n");
+    return this;
+  }
+
+  /**
+   * @inheritdoc
+   */
+  toScript() {
+    return `# rule:[${this.text}]\r\n`;
+  }
+
+  /**
+   * @inheritdoc
+   */
+  value(value) {
+    if (typeof (value) === "undefined")
+      return this.text;
+
+    this.text = value.replace(/[\]\r\n]/g, " ").trim();
+    return this;
   }
 }
 
@@ -286,6 +374,31 @@ class SieveWhiteSpace extends SieveAbstractElement {
   }
 
   /**
+   * Moves the first comment and everything following it into a separate
+   * whitespace node. Conditions consume trailing whitespace themselves, so
+   * this makes comments after a rule available to the surrounding block.
+   *
+   * @returns {SieveWhiteSpace|null}
+   *   the extracted whitespace or null when no comment is present
+   */
+  extractComments() {
+    const index = this.elements.findIndex((item) => {
+      return item.nodeType() === "comment";
+    });
+
+    if (index < 0)
+      return null;
+
+    const result = this.document().createByName("whitespace");
+    result.elements = this.elements.splice(index);
+
+    for (const item of result.elements)
+      item.parent(result);
+
+    return result;
+  }
+
+  /**
    * Parses a String for whitespace characters. It stops as soon as
    * it finds the first non whitespace. This means this method extracts
    * zero or more whitespace characters
@@ -337,6 +450,7 @@ class SieveWhiteSpace extends SieveAbstractElement {
 SieveLexer.register(SieveLineBreak);
 SieveLexer.register(SieveDeadCode);
 SieveLexer.register(SieveBracketComment);
+SieveLexer.register(SieveRuleNameComment);
 SieveLexer.register(SieveHashComment);
 
 SieveLexer.register(SieveWhiteSpace);

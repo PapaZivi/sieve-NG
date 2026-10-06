@@ -61,7 +61,7 @@ class SieveAbstractDragHandler {
 
     this.onDrag(event);
 
-    const elm = this.owner().html();
+    const elm = this.getDragImage();
 
     const rect = elm.getBoundingClientRect();
 
@@ -73,6 +73,16 @@ class SieveAbstractDragHandler {
     event.stopPropagation();
 
     return true;
+  }
+
+  /**
+   * Gets the element used as drag image.
+   *
+   * @returns {HTMLElement}
+   *   the drag image element
+   */
+  getDragImage() {
+    return this.owner().html();
   }
 
   /**
@@ -179,6 +189,59 @@ class SieveMoveDragHandler extends SieveAbstractDragHandler {
 }
 
 /**
+ * Moves an element which may be displayed as part of a complete rule.
+ */
+class SieveRuleMoveDragHandler extends SieveMoveDragHandler {
+
+  /**
+   * Gets the rule-name and condition pair associated with the dragged item.
+   *
+   * @returns {SieveAbstractElement[]}
+   *   the complete rule or the dragged element by itself
+   */
+  getRuleElements() {
+    const source = this.owner().getSieve();
+    const parent = source.parent();
+
+    if (!parent?.children)
+      return [source];
+
+    const elements = parent.children();
+    const index = elements.indexOf(source);
+
+    const isRuleName = (item) => {
+      return item?.nodeName() === "whitespace" && item.elements.some((elm) => {
+        return elm.nodeName() === "comment/rulename";
+      });
+    };
+
+    if (source.nodeName() === "condition" && isRuleName(elements[index - 1]))
+      return [elements[index - 1], source];
+
+    if (isRuleName(source) && elements[index + 1]?.nodeName() === "condition")
+      return [source, elements[index + 1]];
+
+    return [source];
+  }
+
+  /**
+   * @inheritdoc
+   */
+  getScript() {
+    return this.getRuleElements().map((item) => {
+      return item.toScript();
+    }).join("");
+  }
+
+  /**
+   * @inheritdoc
+   */
+  getDragImage() {
+    return this.owner().html().closest(".sivRule") || super.getDragImage();
+  }
+}
+
+/**
  *
  */
 class SieveCreateDragHandler extends SieveAbstractDragHandler {
@@ -200,5 +263,6 @@ class SieveCreateDragHandler extends SieveAbstractDragHandler {
 
 export {
   SieveMoveDragHandler,
+  SieveRuleMoveDragHandler,
   SieveCreateDragHandler
 };

@@ -45,6 +45,23 @@ class SieveRootNodeUI extends SieveAbstractBoxUI {
  */
 class SieveBlockUI extends SieveAbstractBoxUI {
 
+  /**
+   * Checks whether the element contains a rule-name marker.
+   *
+   * @param {SieveAbstractElement} elm
+   *   the sieve element
+   * @returns {boolean}
+   *   true when this element is a rule name
+   */
+  isRuleName(elm) {
+    if (elm.nodeName() !== "whitespace")
+      return false;
+
+    return elm.elements.some((item) => {
+      return item.nodeName() === "comment/rulename";
+    });
+  }
+
   // TODO is this really needed to wrap the item?
   /**
    * Wraps the given child item in to a block.
@@ -70,7 +87,9 @@ class SieveBlockUI extends SieveAbstractBoxUI {
     const elm = document.createElement("div");
     elm.classList.add("sivBlock");
 
-    for (const sivElm of this.getSieve().elms) {
+    const elements = this.getSieve().elms;
+    for (let i = 0; i < elements.length; i++) {
+      const sivElm = elements[i];
       const item = sivElm.html();
 
       if (!item)
@@ -79,6 +98,19 @@ class SieveBlockUI extends SieveAbstractBoxUI {
       elm.append((new SieveDropBoxUI(this, "sivBlockSpacer"))
         .drop(new SieveBlockDropHandler(), sivElm)
         .html());
+
+      const condition = elements[i + 1];
+      if (this.isRuleName(sivElm) && condition?.nodeName() === "condition") {
+        const rule = document.createElement("div");
+        rule.classList.add("sivRule");
+        rule.append(item);
+        rule.append(condition.html());
+
+        elm.append(this.createBlockChild(rule));
+        i++;
+        continue;
+      }
+
       elm.append(this.createBlockChild(item));
     }
 

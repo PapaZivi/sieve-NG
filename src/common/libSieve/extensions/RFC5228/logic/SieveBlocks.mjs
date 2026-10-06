@@ -42,9 +42,21 @@ SieveBlockBody.nodeType = function () {
 
 SieveBlockBody.prototype.init
   = function (parser) {
-    while (this._probeByClass(["action", "condition", "whitespace"], parser))
-      this.elms.push(
-        this._createByClass(["action", "condition", "whitespace"], parser));
+    while (this._probeByClass(["action", "condition", "whitespace"], parser)) {
+      const item = this._createByClass(
+        ["action", "condition", "whitespace"], parser);
+      this.elms.push(item);
+
+      if (!item.extractTrailingComments)
+        continue;
+
+      const comments = item.extractTrailingComments();
+      if (!comments)
+        continue;
+
+      comments.parent(this);
+      this.elms.push(comments);
+    }
 
     return this;
   };
@@ -161,6 +173,24 @@ class SieveRootNode extends SieveBlockBody {
     // After the import section only deadcode and actions are valid
     if (this._probeByName("block/body", parser))
       this.elms[ROOT_ELEMENT_BODY].init(parser);
+
+    // The import parser has to consume whitespace in order to find require
+    // statements. Whitespace after the last require, however, semantically
+    // belongs in front of the first rule/action and must be visible there.
+    const imports = this.elms[ROOT_ELEMENT_IMPORT];
+    const body = this.elms[ROOT_ELEMENT_BODY];
+    let lastRequire = -1;
+
+    for (let i = 0; i < imports.elms.length; i++) {
+      if (imports.elms[i].nodeName() === "import/require")
+        lastRequire = i;
+    }
+
+    const leadingBodyWhitespace = imports.elms.splice(lastRequire + 1);
+    for (const item of leadingBodyWhitespace)
+      item.parent(body);
+
+    body.elms.unshift(...leadingBodyWhitespace);
 
     return this;
   }

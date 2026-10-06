@@ -1,7 +1,7 @@
 {
   "name": "sieve-NG",
   "description": "__MSG_extensionDescription__",
-  "version": "26.9",
+  "version": "26.10",
   "icons": {
     "64": "libs/icons/sieve-ng.svg"
   },
@@ -15,7 +15,7 @@
       "id": "sieve-ng@hightext.de",
       "update_url": "https://github.com/PapaZivi/sieve-NG/releases/latest/download/update.json",
       "strict_min_version": "128.0",
-      "strict_max_version": "156.*"
+      "strict_max_version": "158.*"
     }
   },
   "permissions": [

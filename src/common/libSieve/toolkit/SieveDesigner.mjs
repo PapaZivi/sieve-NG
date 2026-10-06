@@ -112,7 +112,12 @@ const SieveDesigner =
       name = name.nodeName();
 
     this.names[name] = {};
-    this.names[name].onNew = function (elm) { return new callback(elm); };
+    this.names[name].onNew = function (elm) {
+      if (callback.isVisible && !callback.isVisible(elm))
+        return null;
+
+      return new callback(elm);
+    };
   },
 
   /**

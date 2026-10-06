@@ -354,7 +354,47 @@ class SieveBlockDropHandler extends SieveDropHandler {
    */
   constructor() {
     super(
-      ["sieve/action", "sieve/test", "sieve/operator"]);
+      ["sieve/action", "sieve/test", "sieve/operator",
+        "sieve/comment", "sieve/rulename"]);
+  }
+
+  /**
+   * Checks whether an element is a rule-name comment.
+   *
+   * @param {SieveAbstractElement} item
+   *   the element to check
+   * @returns {boolean}
+   *   true when the element contains a rule name
+   */
+  isRuleName(item) {
+    return item?.nodeName() === "whitespace" && item.elements.some((elm) => {
+      return elm.nodeName() === "comment/rulename";
+    });
+  }
+
+  /**
+   * Gets the complete rule associated with an element.
+   *
+   * @param {SieveAbstractElement} source
+   *   the dragged element
+   * @returns {SieveAbstractElement[]}
+   *   the rule-name and condition pair or the source by itself
+   */
+  getRuleElements(source) {
+    const parent = source.parent();
+    if (!parent?.children)
+      return [source];
+
+    const elements = parent.children();
+    const index = elements.indexOf(source);
+
+    if (source.nodeName() === "condition" && this.isRuleName(elements[index - 1]))
+      return [elements[index - 1], source];
+
+    if (this.isRuleName(source) && elements[index + 1]?.nodeName() === "condition")
+      return [source, elements[index + 1]];
+
+    return [source];
   }
 
 
@@ -363,14 +403,51 @@ class SieveBlockDropHandler extends SieveDropHandler {
    */
   canMoveElement(sivFlavour, id) {
     const source = this.document().id(id);
+    const rule = this.getRuleElements(source);
 
-    if (source.html().parentElement.previousElementSibling === this.owner().html())
-      return false;
+    if (sivFlavour === "sieve/rulename" && rule.length === 1) {
+      const sibling = this.sibling();
+      if (!sibling || sibling.nodeName() !== "condition")
+        return false;
+    }
 
-    if (source.html().parentElement.nextElementSibling === this.owner().html())
+    const target = this.parent().getSieve();
+    if (source.parent() !== target)
+      return true;
+
+    const elements = target.children();
+    const start = elements.indexOf(rule[0]);
+    const end = elements.indexOf(rule[rule.length - 1]);
+    const sibling = this.sibling();
+    const targetIndex = sibling ? elements.indexOf(sibling) : elements.length;
+
+    if (targetIndex >= start && targetIndex <= end + 1)
       return false;
 
     return true;
+  }
+
+  /**
+   * Moves a rule-name and its condition as one unit.
+   *
+   * @param {SieveAbstractElement[]} rule
+   *   the paired rule elements
+   * @param {SieveAbstractElement} target
+   *   the target block
+   */
+  moveRule(rule, target) {
+    const oldOwner = rule[0].parent();
+    const sibling = this.sibling();
+
+    for (const item of rule)
+      item.remove();
+
+    for (const item of rule)
+      target.append(item, sibling);
+
+    target.widget().reflow();
+    if (oldOwner !== target)
+      oldOwner.widget().reflow();
   }
 
   /**
@@ -421,6 +498,12 @@ class SieveBlockDropHandler extends SieveDropHandler {
    */
   moveAction(source, target) {
 
+    const rule = this.getRuleElements(source);
+    if (rule.length > 1) {
+      this.moveRule(rule, target);
+      return;
+    }
+
     // remember owner
     const oldOwner = source.remove(true, target);
     // Move Item to new owner
@@ -455,6 +538,8 @@ class SieveBlockDropHandler extends SieveDropHandler {
         return;
 
       case "sieve/action":
+      case "sieve/comment":
+      case "sieve/rulename":
         this.moveAction(source, target);
         return;
     }
@@ -469,6 +554,11 @@ class SieveBlockDropHandler extends SieveDropHandler {
   canCreateElement(sivFlavour, type) {
     if (sivFlavour === "sieve/operator")
       return false;
+
+    if (sivFlavour === "sieve/rulename") {
+      const sibling = this.sibling();
+      return Boolean(sibling && sibling.nodeName() === "condition");
+    }
 
     return true;
   }
@@ -498,6 +588,14 @@ class SieveBlockDropHandler extends SieveDropHandler {
       item.append(elm, this.sibling());
       // item.append( item.document().createByName( "whitespace", "\r\n" ), this.sibling() );
     }
+    else if (sivFlavour === "sieve/comment") {
+      elm = item.document().createByName("whitespace", "# Comment\r\n");
+      item.append(elm, this.sibling());
+    }
+    else if (sivFlavour === "sieve/rulename") {
+      elm = item.document().createByName("whitespace", "# rule:[Rule name]\r\n");
+      item.append(elm, this.sibling());
+    }
     else {
       throw new Error("Unknown Element " + type);
     }
@@ -515,7 +613,8 @@ class SieveTrashBoxDropHandler extends SieveDropHandler {
    * @inheritdoc
    */
   constructor() {
-    super(["sieve/action", "sieve/test", "sieve/if", "sieve/operator"]);
+    super(["sieve/action", "sieve/test", "sieve/if", "sieve/operator",
+      "sieve/comment", "sieve/rulename"]);
   }
 
   /**

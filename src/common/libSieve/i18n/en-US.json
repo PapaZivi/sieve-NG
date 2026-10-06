@@ -2,6 +2,17 @@
   "sidebar.actions" : "Actions",
   "sidebar.tests" : "Tests",
   "sidebar.operators" : "Operators",
+  "sidebar.comments" : "Comments",
+  "sidebar.rulename" : "Rule name",
+  "sidebar.comment" : "Comment",
+
+  "rulename.tab" : "Rule name",
+  "rulename.label" : "Name",
+  "rulename.help" : "A rule name can only be placed immediately before a rule.",
+  "rulename.summary" : "Rule name",
+  "comment.tab" : "Comment",
+  "comment.label" : "Comment text",
+  "comment.summary" : "Comment:",
 
   "debug.tab.script" : "Script",
   "debug.tab.capabilities" : "Capabilities",

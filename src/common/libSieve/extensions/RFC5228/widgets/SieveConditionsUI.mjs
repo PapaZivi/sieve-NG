@@ -15,7 +15,7 @@ import { SieveDesigner } from "./../../../toolkit/SieveDesigner.mjs";
 import { SieveSourceBoxUI, SieveDropBoxUI } from "./../../../toolkit/widgets/Boxes.mjs";
 import { SieveBlockUI } from "./SieveBlocksUI.mjs";
 
-import { SieveMoveDragHandler } from "./../../../toolkit/events/DragHandler.mjs";
+import { SieveRuleMoveDragHandler } from "./../../../toolkit/events/DragHandler.mjs";
 
 import { SieveConditionDropHandler } from "./../../../toolkit/events/DropHandler.mjs";
 
@@ -76,7 +76,7 @@ class SieveConditionUI extends SieveSourceBoxUI {
    */
   constructor(elm) {
     super(elm);
-    this.drag(new SieveMoveDragHandler());
+    this.drag(new SieveRuleMoveDragHandler());
   }
 
 

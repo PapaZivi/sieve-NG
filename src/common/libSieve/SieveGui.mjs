@@ -42,7 +42,7 @@ let dom2;
  * @returns {HTMLElement}
  *   the newly created sieve element
  */
-function createMenuItem(action, flavour, docShell) {
+function createMenuItem(action, flavour, docShell, label) {
 
   const elm2 = new SieveSimpleBoxUI(docShell);
   elm2.drag(new SieveCreateDragHandler());
@@ -54,7 +54,7 @@ function createMenuItem(action, flavour, docShell) {
   elm.classList.add("sivTertiaryBackground");
   elm.classList.add("border");
   elm.classList.add("rounded");
-  elm.textContent = action.split('/')[NAME];
+  elm.textContent = label || action.split('/')[NAME];
 
   return elm;
 }
@@ -105,6 +105,20 @@ function init() {
   for (key in SieveLexer.types["operator"])
     if (SieveLexer.types["operator"][key].onCapable(SieveLexer.capabilities()))
       operators.append(createMenuItem(key, "sieve/operator", docShell));
+
+  // Comments are Sieve whitespace metadata rather than commands. Expose the
+  // two supported visual-editor variants explicitly instead of listing every
+  // lexer comment implementation.
+  const comments = document.querySelector("#sivComments");
+  while (comments.firstChild)
+    comments.firstChild.remove();
+
+  comments.append(createMenuItem(
+    "comment/rulename", "sieve/rulename", docShell,
+    SieveI18n.getInstance().getString("sidebar.rulename")));
+  comments.append(createMenuItem(
+    "comment/hashcomment", "sieve/comment", docShell,
+    SieveI18n.getInstance().getString("sidebar.comment")));
 
   // create the trash bin
   const trash = document.querySelector("#sivTrash");

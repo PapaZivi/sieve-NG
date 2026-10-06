@@ -292,6 +292,17 @@ class SieveCondition extends SieveBlockBody {
   }
 
   /**
+   * Extracts comments consumed after the final branch.
+   *
+   * @returns {SieveWhiteSpace|null}
+   *   the extracted whitespace or null when none exists
+   */
+  extractTrailingComments() {
+    const last = this.children(":last");
+    return last.ws[AFTER_BLOCK].extractComments();
+  }
+
+  /**
    *
    * @param {string} childId
    *   the childs unique id.

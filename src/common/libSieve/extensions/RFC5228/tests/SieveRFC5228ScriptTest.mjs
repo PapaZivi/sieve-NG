@@ -41,6 +41,93 @@ suite.add("Single line comment", () => {
   suite.expectValidScript(script);
 });
 
+suite.add("Rule name comment", () => {
+
+  const script = ""
+    + '# rule:[SPAM]\r\n'
+    + 'if header :contains "subject" "***SPAM***" {\r\n'
+    + '    stop;\r\n'
+    + '}\r\n';
+
+  const doc = suite.parseScript(script);
+  suite.validateDocument(doc, script);
+
+  const whitespace = doc.root().children(1).children(0);
+  const ruleName = whitespace.elements.find((item) => {
+    return item.nodeName() === "comment/rulename";
+  });
+
+  suite.assertTrue(Boolean(ruleName));
+  suite.assertEquals("SPAM", ruleName.value());
+});
+
+suite.add("Rule name marker with trailing text remains a normal comment", () => {
+
+  const script = ""
+    + '# rule:[SPAM] trailing text\r\n'
+    + 'keep;\r\n';
+
+  const doc = suite.parseScript(script);
+  suite.validateDocument(doc, script);
+
+  const whitespace = doc.root().children(1).children(0);
+  const comment = whitespace.elements.find((item) => {
+    return item.nodeType() === "comment";
+  });
+
+  suite.assertEquals("comment/hashcomment", comment.nodeName());
+});
+
+suite.add("Rule names before consecutive conditions", () => {
+
+  const script = ""
+    + '# rule:[SPAM]\r\n'
+    + 'if header :contains "subject" "***SPAM***" { stop; }\r\n'
+    + '# rule:[Payment received]\r\n'
+    + 'if address :contains "from" "service@example.com" { keep; }\r\n';
+
+  const doc = suite.parseScript(script);
+  suite.validateDocument(doc, script);
+
+  const body = doc.root().children(1);
+  const names = body.children()
+    .filter((item) => {
+      return item.nodeName() === "whitespace";
+    })
+    .flatMap((item) => {
+      return item.elements;
+    })
+    .filter((item) => {
+      return item.nodeName() === "comment/rulename";
+    })
+    .map((item) => {
+      return item.value();
+    });
+
+  suite.assertEquals(2, names.length);
+  suite.assertEquals("SPAM", names[0]);
+  suite.assertEquals("Payment received", names[1]);
+});
+
+suite.add("Comment after final condition", () => {
+
+  const script = ""
+    + 'if header :contains "subject" "Example" { keep; }\r\n'
+    + '#test\r\n';
+
+  const doc = suite.parseScript(script);
+  suite.validateDocument(doc, script);
+
+  const body = doc.root().children(1);
+  const trailingWhitespace = body.children(1);
+  const comment = trailingWhitespace.elements.find((item) => {
+    return item.nodeType() === "comment";
+  });
+
+  suite.assertEquals("comment/hashcomment", comment.nodeName());
+  suite.assertEquals("test", comment.value());
+});
+
 
 suite.add("Multiline comment", () => {
 
