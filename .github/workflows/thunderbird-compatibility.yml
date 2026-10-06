@@ -17,6 +17,10 @@ jobs:
     name: ${{ matrix.channel }}
     runs-on: ubuntu-24.04
     timeout-minutes: 25
+    env:
+      # Thunderbird Daily's Linux sandbox uses bwrap, but GitHub's runner
+      # does not permit the required unprivileged PID namespace.
+      MOZ_DISABLE_CONTENT_SANDBOX: "1"
     strategy:
       fail-fast: false
       matrix:
