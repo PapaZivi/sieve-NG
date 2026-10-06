@@ -21,6 +21,9 @@ jobs:
       # Thunderbird Daily's Linux sandbox uses bwrap, but GitHub's runner
       # does not permit the required unprivileged PID namespace.
       MOZ_DISABLE_CONTENT_SANDBOX: "1"
+      # Required by current Thunderbird builds before Marionette may switch
+      # from the content context to the privileged chrome/system context.
+      MOZ_REMOTE_ALLOW_SYSTEM_ACCESS: "1"
     strategy:
       fail-fast: false
       matrix:
