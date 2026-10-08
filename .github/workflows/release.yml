@@ -171,7 +171,7 @@ jobs:
       - name: Generate Thunderbird update manifest
         shell: bash
         run: |
-          node -e 'const fs = require("fs"); const version = process.env.RELEASE_TAG; const repository = process.env.GITHUB_REPOSITORY; const base = "https://github.com/" + repository + "/releases"; const update = { addons: { "sieve-ng@hightext.de": { updates: [{ version: version, update_link: base + "/download/" + version + "/sieve-NG-" + version + ".xpi", update_info_url: base + "/tag/" + version, browser_specific_settings: { gecko: { strict_min_version: "128.0", strict_max_version: "158.*" } } }] } } }; fs.writeFileSync("release-assets/update.json", JSON.stringify(update, null, 2) + "\n");'
+          node -e 'const fs = require("fs"); const version = process.env.RELEASE_TAG; const repository = process.env.GITHUB_REPOSITORY; const base = "https://github.com/" + repository + "/releases"; const download = base + "/download/" + version + "/sieve-NG-" + version; const info = base + "/tag/" + version; const update = { addons: { "sieve-ng@hightext.de": { updates: [{ version: version, update_link: download + ".xpi", update_info_url: info, browser_specific_settings: { gecko: { strict_min_version: "128.0", strict_max_version: "158.*" } } }] } }, applications: { "sieve-ng": { updates: [{ version: version, update_info_url: info, downloads: { "win32-x64": download + "-win32-x64.msi", "linux-x64": download + "-linux-x64.AppImage", "darwin-x64": download + "-macos-x64.zip" } }] } } }; fs.writeFileSync("release-assets/update.json", JSON.stringify(update, null, 2) + "\n");'
       - name: Create or update GitHub release
         env:
           GH_TOKEN: ${{ github.token }}

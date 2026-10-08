@@ -21,14 +21,18 @@ class SieveUpdaterUI {
    * Checks for new updates and display a new message if a newer version is available
    */
   async check() {
-    const status = await SieveIpcClient.sendMessage("core", "update-check");
+    const update = await SieveIpcClient.sendMessage("core", "update-check");
 
-    if (status !== true)
+    if (!update)
       return;
 
     const template = await (new SieveTemplate()).load("./updater/update.html");
+    template.querySelector(".sieve-update-version").textContent
+      = ` (${update.version})`;
+
     template.querySelector(".sieve-update-msg").addEventListener("click", () => {
-      SieveIpcClient.sendMessage("core", "update-goto-url");
+      SieveIpcClient.sendMessage(
+        "core", "update-goto-url", update.downloadUrl);
     });
 
     const parent = document.querySelector("#ctx");

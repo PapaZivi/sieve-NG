@@ -56,8 +56,13 @@ import { SieveI18n } from "./libs/managesieve.ui/utils/SieveI18n.mjs";
       return await (new SieveUpdater()).check();
     },
 
-    "update-goto-url": () => {
-      shell.openExternal('https://github.com/thsmi/sieve/releases/latest');
+    "update-goto-url": async (msg) => {
+      const updater = new SieveUpdater();
+      if (!updater.isTrustedDownloadUrl(msg.payload))
+        return false;
+
+      await shell.openExternal(msg.payload);
+      return true;
     },
 
     "import-thunderbird": function () {

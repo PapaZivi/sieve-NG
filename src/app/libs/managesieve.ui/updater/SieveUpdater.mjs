@@ -10,7 +10,10 @@
  */
 
 
-const SIEVE_GITHUB_UPDATE_URL = "https://thsmi.github.io/sieve/update.json";
+const SIEVE_GITHUB_UPDATE_URL = "https://github.com/PapaZivi/sieve-NG/releases/latest/download/update.json";
+const SIEVE_APPLICATION_ID = "sieve-ng";
+const SIEVE_DOWNLOAD_ORIGIN = "https://github.com";
+const SIEVE_DOWNLOAD_PATH = "/PapaZivi/sieve-NG/releases/download/";
 const MAJOR_VERSION = 0;
 const MINOR_VERSION = 1;
 const PATCH_VERSION = 2;
@@ -104,6 +107,12 @@ class SieveUpdater {
     current = current.split(".");
     next = next.split(".");
 
+    while (current.length <= PATCH_VERSION)
+      current.push("0");
+
+    while (next.length <= PATCH_VERSION)
+      next.push("0");
+
     // In case the new major is larger, then this version is definitely older.
     if (this.isGreaterThan(next[MAJOR_VERSION], current[MAJOR_VERSION]))
       return false;
@@ -129,6 +138,68 @@ class SieveUpdater {
   }
 
   /**
+   * Checks whether a URL points to a release asset in this repository.
+   *
+   * @param {string} value
+   *   the URL to check
+   * @returns {boolean}
+   *   true when the URL is a trusted release download
+   */
+  isTrustedDownloadUrl(value) {
+    try {
+      const url = new URL(value);
+      return url.origin === SIEVE_DOWNLOAD_ORIGIN
+        && url.pathname.startsWith(SIEVE_DOWNLOAD_PATH);
+    } catch {
+      return false;
+    }
+  }
+
+  /**
+   * Finds the newest compatible application update.
+   *
+   * @param {object} manifest
+   *   the update manifest
+   * @param {string} currentVersion
+   *   the installed application version
+   * @param {string} platform
+   *   the Node.js platform identifier
+   * @param {string} arch
+   *   the Node.js architecture identifier
+   * @returns {object|null}
+   *   update details or null when no update is available
+   */
+  findUpdate(manifest, currentVersion, platform, arch) {
+    const items = manifest?.applications?.[SIEVE_APPLICATION_ID]?.updates;
+    if (!Array.isArray(items))
+      return null;
+
+    const target = `${platform}-${arch}`;
+    let result = null;
+
+    for (const item of items) {
+      const downloadUrl = item.downloads?.[target];
+
+      if (!downloadUrl || !this.isTrustedDownloadUrl(downloadUrl))
+        continue;
+
+      if (this.isOlder(item.version, currentVersion))
+        continue;
+
+      if (result && this.isOlder(item.version, result.version))
+        continue;
+
+      result = {
+        version: item.version,
+        downloadUrl: downloadUrl,
+        infoUrl: item.update_info_url || ""
+      };
+    }
+
+    return result;
+  }
+
+  /**
    * Compares the current version against the manifest.
    * @param {object} manifest
    *   the manifest with the version information
@@ -138,33 +209,29 @@ class SieveUpdater {
    *   false if the current version is the latest.
    *   true in case the manifest contains a newer version definition.
    */
-  compare(manifest, currentVersion) {
-    const items = manifest["addons"]["sieve@mozdev.org"]["updates"];
-
-    // There are no updates if all entries are less or equal to the current version
-    for (const item of items) {
-
-      if (this.isOlder(item.version, currentVersion))
-        continue;
-
-      return true;
-    }
-
-    return false;
+  compare(manifest, currentVersion, platform = "linux", arch = "x64") {
+    return Boolean(this.findUpdate(
+      manifest, currentVersion, platform, arch));
   }
 
   /**
    * Checks the if any updates are published at github.
-   * @returns {boolean}
-   *  true if newer version are available, otherwise false.
+   * @returns {object|null}
+   *  update details if a newer version is available, otherwise null.
    */
   async check() {
+    try {
+      const currentVersion = await (require('electron').ipcRenderer.invoke("get-version"));
+      const response = await fetch(SIEVE_GITHUB_UPDATE_URL, { cache: "no-store" });
 
-    const currentVersion = await (require('electron').ipcRenderer.invoke("get-version"));
+      if (!response.ok)
+        return null;
 
-    return this.compare(
-      await (await fetch(SIEVE_GITHUB_UPDATE_URL)).json(),
-      currentVersion);
+      return this.findUpdate(
+        await response.json(), currentVersion, process.platform, process.arch);
+    } catch {
+      return null;
+    }
   }
 }
 
